@@ -7,7 +7,7 @@ Neurobeat is an Android mobile application built with Kotlin and Jetpack Compose
 - **Package**: `dev.jefrien.neurobeat`
 - **Application ID**: `dev.jefrien.neurobeat`
 - **Min SDK**: 24 (Android 7.0)
-- **Target/Compile SDK**: 36 (Android 16 Baklava)
+- **Target/Compile SDK**: 35 (Android 15)
 - **Java Compatibility**: VERSION_11
 - **Current Version**: 1.0 (versionCode 1)
 
@@ -15,9 +15,9 @@ Neurobeat is an Android mobile application built with Kotlin and Jetpack Compose
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
-| Language | Kotlin | 2.2.10 |
+| Language | Kotlin | 2.1.21 |
 | Build System | Gradle (Kotlin DSL) | — |
-| Android Gradle Plugin | AGP | 9.1.1 |
+| Android Gradle Plugin | AGP | 8.12.3 |
 | UI Framework | Jetpack Compose (BOM) | 2026.02.01 |
 | Design System | Material3 | — |
 | Unit Testing | JUnit 4 | 4.13.2 |
