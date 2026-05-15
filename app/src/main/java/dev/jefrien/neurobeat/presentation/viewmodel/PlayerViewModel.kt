@@ -1,13 +1,17 @@
 package dev.jefrien.neurobeat.presentation.viewmodel
 
+import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.jefrien.neurobeat.data.remote.api.CoverArtUrlBuilder
 import dev.jefrien.neurobeat.domain.model.Song
+import dev.jefrien.neurobeat.service.playback.MusicPlaybackService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     val exoPlayer: ExoPlayer,
-    private val urlBuilder: CoverArtUrlBuilder
+    private val urlBuilder: CoverArtUrlBuilder,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     data class PlayerState(
@@ -102,6 +107,19 @@ class PlayerViewModel @Inject constructor(
         exoPlayer.prepare()
         exoPlayer.seekTo(startIndex, 0)
         exoPlayer.play()
+
+        // Start the foreground service for playback notification
+        startPlaybackService()
+    }
+
+    private fun startPlaybackService() {
+        val intent = Intent(context, MusicPlaybackService::class.java)
+        try {
+            context.startForegroundService(intent)
+        } catch (_: Exception) {
+            // Fallback for older Android versions
+            context.startService(intent)
+        }
     }
 
     fun playPause() {
@@ -109,6 +127,7 @@ class PlayerViewModel @Inject constructor(
             exoPlayer.pause()
         } else {
             exoPlayer.play()
+            startPlaybackService()
         }
     }
 
