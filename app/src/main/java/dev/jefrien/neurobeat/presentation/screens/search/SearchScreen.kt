@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -62,8 +63,8 @@ fun SearchScreen(
             )
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(20.dp),
+            modifier = Modifier.fillMaxSize().statusBarsPadding(),
+            contentPadding = PaddingValues(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 180.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -92,7 +93,7 @@ fun LibraryScreen(
                 )
             )
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
             Text(
                 text = "Library",
                 color = colors.textPrimary,
@@ -180,7 +181,7 @@ private fun ArtistsTab(
             Text(error, color = colors.error)
         }
         else -> LazyColumn(
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 180.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(artists) { artist ->
@@ -235,7 +236,7 @@ private fun AlbumsTab(
         }
         else -> LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 180.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -288,7 +289,7 @@ private fun SongsTab(
             Text(error, color = colors.error)
         }
         else -> LazyColumn(
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 180.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             items(songs) { song ->
@@ -344,7 +345,7 @@ private fun PlaylistsTab(
             Text(error, color = colors.error)
         }
         else -> LazyColumn(
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 180.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(playlists) { playlist ->

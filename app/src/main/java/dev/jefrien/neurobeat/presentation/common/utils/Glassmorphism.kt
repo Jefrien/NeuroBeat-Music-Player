@@ -1,6 +1,5 @@
 package dev.jefrien.neurobeat.presentation.common.utils
 
-import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,10 +9,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.jefrien.neurobeat.app.theme.LocalAppColors
@@ -41,17 +37,7 @@ fun Modifier.glassCard(
 
 fun Modifier.glassBottomBar(): Modifier = composed {
     val colors = LocalAppColors.current
-    val context = LocalContext.current
-    val canBlur = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-
     this
-        .then(
-            if (canBlur) {
-                Modifier.graphicsLayer {
-                    renderEffect = null // Blur se aplica con backdrop en composable
-                }
-            } else Modifier
-        )
         .background(
             brush = Brush.verticalGradient(
                 colors = listOf(

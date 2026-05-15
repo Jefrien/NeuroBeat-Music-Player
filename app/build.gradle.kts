@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "dev.jefrien.neurobeat"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "dev.jefrien.neurobeat"
@@ -105,6 +105,9 @@ dependencies {
 
     // Circle Audio Visualizer
     implementation("io.github.miller198:ComposeCircleAudioVisualizer:1.1.0")
+
+    // Haze (backdrop blur)
+    implementation(libs.haze)
 
     // Testing
     testImplementation(libs.junit)

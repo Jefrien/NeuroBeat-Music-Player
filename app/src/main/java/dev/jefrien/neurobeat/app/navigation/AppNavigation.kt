@@ -3,19 +3,18 @@ package dev.jefrien.neurobeat.app.navigation
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +26,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 import dev.jefrien.neurobeat.app.theme.LocalAppColors
 import dev.jefrien.neurobeat.presentation.common.components.MiniPlayer
 import dev.jefrien.neurobeat.presentation.screens.discover.DiscoverScreen
@@ -78,45 +80,25 @@ fun AppNavigation(
         else -> Screen.Login.route
     }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        bottomBar = {
-            AnimatedVisibility(
-                visible = showBottomBar,
-                enter = slideInVertically { it },
-                exit = slideOutVertically { it }
-            ) {
-                Column {
-                    MiniPlayer(
-                        onExpand = { navController.navigate(Screen.Player.route) },
-                        viewModel = playerViewModel
-                    )
-                    GlassBottomBar(
-                        currentRoute = currentRoute ?: Screen.Discover.route,
-                        onNavigate = { route ->
-                            navController.navigate(route) {
-                                popUpTo(Screen.Discover.route) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        }
-                    )
-                }
-            }
-        }
-    ) { innerPadding ->
+    val hazeState = rememberHazeState()
+
+    CompositionLocalProvider(LocalHazeState provides hazeState) {
+        Box(modifier = Modifier.fillMaxSize()) {
+        // Content layer: edge-to-edge, behind the bottom overlay
         NavHost(
             navController = navController,
             startDestination = startDestination,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier
+                .fillMaxSize()
+                .hazeSource(state = hazeState)
         ) {
             composable(Screen.Splash.route) {
-                val colors = LocalAppColors.current
+                val splashColors = LocalAppColors.current
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = colors.accent)
+                    CircularProgressIndicator(color = splashColors.accent)
                 }
 
                 LaunchedEffect(loginState, isCheckingAuth) {
@@ -210,5 +192,33 @@ fun AppNavigation(
                 )
             }
         }
+
+        // Bottom overlay: MiniPlayer + BottomBar drawn ON TOP of content
+        AnimatedVisibility(
+            visible = showBottomBar,
+            modifier = Modifier.align(Alignment.BottomCenter),
+            enter = slideInVertically { it },
+            exit = slideOutVertically { it }
+        ) {
+            Column {
+                MiniPlayer(
+                    onExpand = { navController.navigate(Screen.Player.route) },
+                    viewModel = playerViewModel
+                )
+                GlassBottomBar(
+                    currentRoute = currentRoute ?: Screen.Discover.route,
+                    onNavigate = { route ->
+                        navController.navigate(route) {
+                            popUpTo(Screen.Discover.route) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
+            }
+        }
+    }
     }
 }
+
+val LocalHazeState = staticCompositionLocalOf { HazeState() }

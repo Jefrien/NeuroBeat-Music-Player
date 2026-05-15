@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -63,8 +64,8 @@ fun DiscoverScreen(
             )
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(vertical = 16.dp)
+            modifier = Modifier.fillMaxSize().statusBarsPadding(),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 180.dp)
         ) {
             item {
                 Text(

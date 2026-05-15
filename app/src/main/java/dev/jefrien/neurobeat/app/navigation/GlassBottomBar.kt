@@ -2,13 +2,13 @@ package dev.jefrien.neurobeat.app.navigation
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -30,12 +30,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.jefrien.neurobeat.app.navigation.LocalHazeState
 import dev.jefrien.neurobeat.app.theme.LocalAppColors
-import dev.jefrien.neurobeat.presentation.common.utils.glassBottomBar
 
 @Composable
 fun GlassBottomBar(
@@ -51,13 +54,28 @@ fun GlassBottomBar(
         BottomNavItem(Screen.Settings.route, "Settings", Icons.Filled.Settings, Icons.Outlined.Settings)
     )
 
+    val hazeState = LocalHazeState.current
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .glassBottomBar()
             .navigationBarsPadding()
             .padding(horizontal = 8.dp, vertical = 8.dp)
+            .hazeEffect(state = hazeState) {
+                blurRadius = 24.dp
+                tints = listOf(HazeTint(colors.surface.copy(alpha = 0.12f)))
+                noiseFactor = 0.15f
+            }
+            .drawBehind {
+                drawLine(
+                    color = Color.White.copy(alpha = 0.15f),
+                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                    end = androidx.compose.ui.geometry.Offset(size.width, 0f),
+                    strokeWidth = 1f
+                )
+            }
     ) {
+        // Content layer (blur handled by hazeEffect above)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,

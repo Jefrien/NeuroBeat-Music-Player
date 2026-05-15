@@ -33,6 +33,9 @@ media3 = "1.6.1"
 # Image
 coil = "2.7.0"
 
+# UI Effects
+haze = "1.7.2"
+
 # Testing
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -89,6 +92,9 @@ media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "medi
 # Image Loading
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 coil-svg = { group = "io.coil-kt", name = "coil-svg", version.ref = "coil" }
+
+# UI Effects
+haze = { group = "dev.chrisbanes.haze", name = "haze", version.ref = "haze" }
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }

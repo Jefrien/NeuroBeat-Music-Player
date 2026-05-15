@@ -49,11 +49,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             NeurobeatTheme(themeManager = themeManager) {
                 val colors = LocalAppColors.current
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(colors.backgroundGradientStart)
-                ) {
+                Box(modifier = Modifier.fillMaxSize()) {
                     AppNavigation()
                 }
             }
