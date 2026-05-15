@@ -35,7 +35,8 @@ class PlayerViewModel @Inject constructor(
         val originalQueue: List<Song> = emptyList(),
         val currentIndex: Int = 0,
         val isShuffleOn: Boolean = false,
-        val repeatMode: Int = Player.REPEAT_MODE_OFF
+        val repeatMode: Int = Player.REPEAT_MODE_OFF,
+        val audioSessionId: Int = 0
     )
 
     private val _state = MutableStateFlow(PlayerState())
@@ -53,13 +54,17 @@ class PlayerViewModel @Inject constructor(
             _state.value = _state.value.copy(
                 currentSong = song,
                 currentIndex = index.coerceAtLeast(0),
-                duration = exoPlayer.duration.coerceAtLeast(0)
+                duration = exoPlayer.duration.coerceAtLeast(0),
+                audioSessionId = exoPlayer.audioSessionId
             )
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState == Player.STATE_READY) {
-                _state.value = _state.value.copy(duration = exoPlayer.duration.coerceAtLeast(0))
+                _state.value = _state.value.copy(
+                    duration = exoPlayer.duration.coerceAtLeast(0),
+                    audioSessionId = exoPlayer.audioSessionId
+                )
             }
         }
     }

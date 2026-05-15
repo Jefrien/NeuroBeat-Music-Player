@@ -103,6 +103,9 @@ dependencies {
     // Wavy Slider
     implementation("ir.mahozad.multiplatform:wavy-slider:2.2.0")
 
+    // Circle Audio Visualizer
+    implementation("io.github.miller198:ComposeCircleAudioVisualizer:1.1.0")
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

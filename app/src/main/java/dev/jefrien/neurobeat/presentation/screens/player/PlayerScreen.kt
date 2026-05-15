@@ -28,6 +28,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.RadialGradientShader
+import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,11 +47,16 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.Player
 import dev.jefrien.neurobeat.app.theme.LocalAppColors
-import dev.jefrien.neurobeat.presentation.common.components.CircularVisualizer
 import dev.jefrien.neurobeat.presentation.common.components.CoverArtImage
 import dev.jefrien.neurobeat.presentation.viewmodel.PlayerViewModel
+import com.miller198.audiovisualizer.configs.ClippingRadiusConfig
+import com.miller198.audiovisualizer.configs.GradientConfig
+import com.miller198.audiovisualizer.soundeffect.SoundEffect
+import com.miller198.audiovisualizer.ui.CircleVisualizer
+import com.miller198.audiovisualizer.configs.VisualizerConfig
 import ir.mahozad.multiplatform.wavyslider.material3.WavySlider
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerScreen(
     onDismiss: () -> Unit,
@@ -103,28 +112,31 @@ fun PlayerScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Cover art with circular visualizer ring around it
+            // Circular cover art with real audio visualizer around it
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.78f)
+                    .fillMaxWidth(0.85f)
                     .aspectRatio(1f),
                 contentAlignment = Alignment.Center
             ) {
-                // Visualizer is larger than the cover so bars stick out around it
-                CircularVisualizer(
-                    isPlaying = state.isPlaying,
-                    modifier = Modifier.fillMaxSize(1.22f),
-                    barCount = 48,
-                    color = colors.accent,
-                    minBarHeightFraction = 0.04f,
-                    maxBarHeightFraction = 0.18f,
-                    barWidthFraction = 0.018f
-                )
+                // Real audio visualizer from ComposeCircleAudioVisualizer library
+                if (state.audioSessionId != 0) {
+                    CircleVisualizer(
+                        audioSessionId = state.audioSessionId,
+                        soundEffects = SoundEffect.WaveStroke,
+                        visualizerConfig = VisualizerConfig.FftCaptureConfig.Default,
+                        modifier = Modifier.fillMaxSize(1.35f),
+                        color = colors.accent,
+                        clippingRadiusConfig = ClippingRadiusConfig.Ratio(0.42f),
+                        gradientConfig = GradientConfig.Disabled
+                    )
+                }
 
+                // Circular cover art
                 Box(
                     modifier = Modifier
-                        .fillMaxSize(0.80f)
-                        .clip(RoundedCornerShape(24.dp))
+                        .fillMaxSize(0.60f)
+                        .clip(CircleShape)
                         .background(colors.surfaceGlass)
                 ) {
                     CoverArtImage(
@@ -179,7 +191,10 @@ fun PlayerScreen(
                         activeTrackColor = colors.accent,
                         inactiveTrackColor = colors.divider
                     ),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    thumb = {
+                        GlowingThumb(color = colors.accent)
+                    }
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -270,4 +285,47 @@ private fun formatTime(ms: Long): String {
     val m = totalSeconds / 60
     val s = totalSeconds % 60
     return "%d:%02d".format(m, s)
+}
+
+@Composable
+private fun GlowingThumb(color: Color) {
+    Box(
+        modifier = Modifier.size(20.dp),
+        contentAlignment = androidx.compose.ui.Alignment.Center
+    ) {
+        // Outer soft glow
+        Box(
+            modifier = Modifier
+                .size(20.dp)
+                .drawBehind {
+                    drawCircle(
+                        brush = ShaderBrush(
+                            RadialGradientShader(
+                                center = Offset(size.width / 2, size.height / 2),
+                                radius = size.width / 2,
+                                colors = listOf(color.copy(alpha = 0.35f), color.copy(alpha = 0f))
+                            )
+                        )
+                    )
+                }
+        )
+        // Middle glow ring
+        Box(
+            modifier = Modifier
+                .size(14.dp)
+                .background(color.copy(alpha = 0.6f), CircleShape)
+        )
+        // Bright inner core
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .background(Color.White, CircleShape)
+        )
+        // Tiny sparkle dot
+        Box(
+            modifier = Modifier
+                .size(3.dp)
+                .background(Color.White.copy(alpha = 0.9f), CircleShape)
+        )
+    }
 }

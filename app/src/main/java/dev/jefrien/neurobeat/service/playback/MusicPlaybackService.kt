@@ -125,10 +125,7 @@ class MusicPlaybackService : MediaSessionService() {
 
     override fun onDestroy() {
         playerNotificationManager?.setPlayer(null)
-        mediaSession?.run {
-            player.release()
-            release()
-        }
+        mediaSession?.release()
         mediaSession = null
         super.onDestroy()
     }
