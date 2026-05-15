@@ -49,11 +49,7 @@ import androidx.media3.common.Player
 import dev.jefrien.neurobeat.app.theme.LocalAppColors
 import dev.jefrien.neurobeat.presentation.common.components.CoverArtImage
 import dev.jefrien.neurobeat.presentation.viewmodel.PlayerViewModel
-import com.miller198.audiovisualizer.configs.ClippingRadiusConfig
-import com.miller198.audiovisualizer.configs.GradientConfig
-import com.miller198.audiovisualizer.soundeffect.SoundEffect
-import com.miller198.audiovisualizer.ui.CircleVisualizer
-import com.miller198.audiovisualizer.configs.VisualizerConfig
+import dev.jefrien.neurobeat.presentation.common.components.CustomCircleVisualizer
 import ir.mahozad.multiplatform.wavyslider.material3.WavySlider
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -85,57 +81,58 @@ fun PlayerScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Header
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onDismiss) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = "Close",
+                        contentDescription = "Cerrar",
                         tint = colors.textPrimary,
                         modifier = Modifier.size(32.dp)
                     )
                 }
                 Text(
-                    text = "Now Playing",
+                    text = "Reproduciendo ahora",
                     color = colors.textPrimary,
                     fontSize = 16.sp
                 )
                 Box(modifier = Modifier.size(48.dp))
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
-
             // Circular cover art with real audio visualizer around it
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.85f)
+                    .fillMaxWidth()
                     .aspectRatio(1f),
                 contentAlignment = Alignment.Center
             ) {
-                // Real audio visualizer from ComposeCircleAudioVisualizer library
-                if (state.audioSessionId != 0) {
-                    CircleVisualizer(
-                        audioSessionId = state.audioSessionId,
-                        soundEffects = SoundEffect.WaveStroke,
-                        visualizerConfig = VisualizerConfig.FftCaptureConfig.Default,
-                        modifier = Modifier.fillMaxSize(1.35f),
-                        color = colors.accent,
-                        clippingRadiusConfig = ClippingRadiusConfig.Ratio(0.42f),
-                        gradientConfig = GradientConfig.Disabled
-                    )
-                }
+                // Custom circular audio visualizer
+                CustomCircleVisualizer(
+                    audioSessionId = state.audioSessionId,
+                    isPlaying = state.isPlaying,
+                    modifier = Modifier.fillMaxSize(),
+                    barCount = 72,
+                    color = colors.accent,
+                    minBarHeightPx = 6f,
+                    maxBarHeightPx = 100f,
+                    barWidthPx = 9f,
+                    coverRadiusFraction = 0.28f,
+                    animationDurationMs = 80
+                )
 
                 // Circular cover art
                 Box(
                     modifier = Modifier
-                        .fillMaxSize(0.60f)
+                        .fillMaxSize(0.50f)
                         .clip(CircleShape)
                         .background(colors.surfaceGlass)
                 ) {
@@ -146,7 +143,6 @@ fun PlayerScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
 
             // Song info
             Text(
@@ -154,7 +150,9 @@ fun PlayerScreen(
                 color = colors.textPrimary,
                 fontSize = 24.sp,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
             )
             Text(
                 text = song.artistName,
@@ -164,16 +162,11 @@ fun PlayerScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp)
-            )
-            Text(
-                text = song.genre ?: "",
-                color = colors.accent,
-                fontSize = 14.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 4.dp)
+                    .padding(horizontal = 24.dp)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+
+            Spacer(modifier = Modifier.height(4.dp))
 
             // Progress slider
             if (state.duration > 0) {
@@ -184,20 +177,24 @@ fun PlayerScreen(
                         val newPosition = (it * state.duration).toLong()
                         viewModel.seekTo(newPosition)
                     },
-                    waveHeight = 10.dp,
+                    waveHeight = 6.dp,
                     waveVelocity = 6.dp to ir.mahozad.multiplatform.wavyslider.WaveDirection.HEAD,
                     colors = SliderDefaults.colors(
                         thumbColor = colors.accent,
                         activeTrackColor = colors.accent,
                         inactiveTrackColor = colors.divider
                     ),
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
                     thumb = {
                         GlowingThumb(color = colors.accent)
                     }
                 )
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
@@ -217,7 +214,9 @@ fun PlayerScreen(
 
             // Controls
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -290,8 +289,8 @@ private fun formatTime(ms: Long): String {
 @Composable
 private fun GlowingThumb(color: Color) {
     Box(
-        modifier = Modifier.size(20.dp),
-        contentAlignment = androidx.compose.ui.Alignment.Center
+        modifier = Modifier.size(16.dp),
+        contentAlignment = Alignment.Center
     ) {
         // Outer soft glow
         Box(
