@@ -100,6 +100,9 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.svg)
 
+    // Wavy Slider
+    implementation("ir.mahozad.multiplatform:wavy-slider:2.2.0")
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

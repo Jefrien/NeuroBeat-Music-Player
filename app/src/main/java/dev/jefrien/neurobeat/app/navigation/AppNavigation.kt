@@ -29,7 +29,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import dev.jefrien.neurobeat.app.theme.LocalAppColors
 import dev.jefrien.neurobeat.presentation.common.components.MiniPlayer
-import dev.jefrien.neurobeat.presentation.screens.create.CreateScreen
 import dev.jefrien.neurobeat.presentation.screens.discover.DiscoverScreen
 import dev.jefrien.neurobeat.presentation.screens.library.AlbumDetailScreen
 import dev.jefrien.neurobeat.presentation.screens.library.ArtistDetailScreen
@@ -52,7 +51,6 @@ fun AppNavigation(
     val showBottomBar = currentRoute in listOf(
         Screen.Discover.route,
         Screen.Search.route,
-        Screen.Create.route,
         Screen.Library.route,
         Screen.Settings.route
     )
@@ -151,7 +149,6 @@ fun AppNavigation(
             composable(Screen.Search.route) {
                 SearchScreen(playerViewModel = playerViewModel)
             }
-            composable(Screen.Create.route) { CreateScreen() }
             composable(Screen.Library.route) {
                 LibraryScreen(
                     onArtistClick = { artistId ->

@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,8 +43,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.Player
 import dev.jefrien.neurobeat.app.theme.LocalAppColors
+import dev.jefrien.neurobeat.presentation.common.components.CircularVisualizer
 import dev.jefrien.neurobeat.presentation.common.components.CoverArtImage
 import dev.jefrien.neurobeat.presentation.viewmodel.PlayerViewModel
+import ir.mahozad.multiplatform.wavyslider.material3.WavySlider
 
 @Composable
 fun PlayerScreen(
@@ -102,18 +103,35 @@ fun PlayerScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Cover art
+            // Cover art with circular visualizer ring around it
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.75f)
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(colors.surfaceGlass)
+                    .fillMaxWidth(0.78f)
+                    .aspectRatio(1f),
+                contentAlignment = Alignment.Center
             ) {
-                CoverArtImage(
-                    coverArtId = song.coverArtId,
-                    modifier = Modifier.fillMaxSize()
+                // Visualizer is larger than the cover so bars stick out around it
+                CircularVisualizer(
+                    isPlaying = state.isPlaying,
+                    modifier = Modifier.fillMaxSize(1.22f),
+                    barCount = 48,
+                    color = colors.accent,
+                    minBarHeightFraction = 0.04f,
+                    maxBarHeightFraction = 0.18f,
+                    barWidthFraction = 0.018f
                 )
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(0.80f)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(colors.surfaceGlass)
+                ) {
+                    CoverArtImage(
+                        coverArtId = song.coverArtId,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -148,12 +166,14 @@ fun PlayerScreen(
             // Progress slider
             if (state.duration > 0) {
                 val progress = state.currentPosition.toFloat() / state.duration.toFloat()
-                Slider(
+                WavySlider(
                     value = progress.coerceIn(0f, 1f),
                     onValueChange = {
                         val newPosition = (it * state.duration).toLong()
                         viewModel.seekTo(newPosition)
                     },
+                    waveHeight = 10.dp,
+                    waveVelocity = 6.dp to ir.mahozad.multiplatform.wavyslider.WaveDirection.HEAD,
                     colors = SliderDefaults.colors(
                         thumbColor = colors.accent,
                         activeTrackColor = colors.accent,

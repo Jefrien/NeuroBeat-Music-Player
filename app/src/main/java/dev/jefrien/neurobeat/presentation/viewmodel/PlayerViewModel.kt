@@ -32,6 +32,7 @@ class PlayerViewModel @Inject constructor(
         val currentPosition: Long = 0,
         val duration: Long = 0,
         val queue: List<Song> = emptyList(),
+        val originalQueue: List<Song> = emptyList(),
         val currentIndex: Int = 0,
         val isShuffleOn: Boolean = false,
         val repeatMode: Int = Player.REPEAT_MODE_OFF
@@ -46,11 +47,12 @@ class PlayerViewModel @Inject constructor(
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            val index = exoPlayer.currentMediaItemIndex
-            val song = _state.value.queue.getOrNull(index)
+            val mediaId = mediaItem?.mediaId
+            val song = _state.value.queue.find { it.id == mediaId }
+            val index = _state.value.queue.indexOfFirst { it.id == mediaId }
             _state.value = _state.value.copy(
                 currentSong = song,
-                currentIndex = index,
+                currentIndex = index.coerceAtLeast(0),
                 duration = exoPlayer.duration.coerceAtLeast(0)
             )
         }
@@ -82,8 +84,10 @@ class PlayerViewModel @Inject constructor(
     fun playQueue(songs: List<Song>, startIndex: Int = 0) {
         _state.value = _state.value.copy(
             queue = songs,
+            originalQueue = songs,
             currentIndex = startIndex,
-            currentSong = songs.getOrNull(startIndex)
+            currentSong = songs.getOrNull(startIndex),
+            isShuffleOn = false
         )
         exoPlayer.clearMediaItems()
         songs.forEach { song ->
@@ -112,7 +116,6 @@ class PlayerViewModel @Inject constructor(
         exoPlayer.seekTo(startIndex, 0)
         exoPlayer.play()
 
-        // Start the foreground service for playback notification
         startPlaybackService()
     }
 
@@ -121,7 +124,6 @@ class PlayerViewModel @Inject constructor(
         try {
             context.startForegroundService(intent)
         } catch (_: Exception) {
-            // Fallback for older Android versions
             context.startService(intent)
         }
     }
@@ -136,15 +138,11 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun next() {
-        if (exoPlayer.hasNextMediaItem()) {
-            exoPlayer.seekToNextMediaItem()
-        }
+        exoPlayer.seekToNext()
     }
 
     fun previous() {
-        if (exoPlayer.hasPreviousMediaItem()) {
-            exoPlayer.seekToPreviousMediaItem()
-        }
+        exoPlayer.seekToPrevious()
     }
 
     fun seekTo(position: Long) {
@@ -154,8 +152,80 @@ class PlayerViewModel @Inject constructor(
 
     fun toggleShuffle() {
         val newShuffle = !_state.value.isShuffleOn
-        exoPlayer.shuffleModeEnabled = newShuffle
-        _state.value = _state.value.copy(isShuffleOn = newShuffle)
+        if (newShuffle) {
+            val currentSong = _state.value.currentSong ?: return
+            val remaining = _state.value.originalQueue.filter { it.id != currentSong.id }.shuffled()
+            val newQueue = listOf(currentSong) + remaining
+            val currentPos = exoPlayer.currentPosition
+
+            _state.value = _state.value.copy(
+                queue = newQueue,
+                isShuffleOn = true,
+                currentIndex = 0
+            )
+            exoPlayer.clearMediaItems()
+            newQueue.forEach { song ->
+                val streamUrl = urlBuilder.buildStreamUrl(song.id) ?: return@forEach
+                val mediaItem = MediaItem.Builder()
+                    .setMediaId(song.id)
+                    .setUri(streamUrl)
+                    .setMediaMetadata(
+                        androidx.media3.common.MediaMetadata.Builder()
+                            .setTitle(song.title)
+                            .setArtist(song.artistName)
+                            .setAlbumTitle(song.albumName)
+                            .setArtworkUri(
+                                song.coverArtId?.let {
+                                    urlBuilder.buildCoverArtUrl(it)?.let { url ->
+                                        android.net.Uri.parse(url)
+                                    }
+                                }
+                            )
+                            .build()
+                    )
+                    .build()
+                exoPlayer.addMediaItem(mediaItem)
+            }
+            exoPlayer.prepare()
+            exoPlayer.seekTo(0, currentPos)
+            exoPlayer.play()
+        } else {
+            val currentSong = _state.value.currentSong
+            val newIndex = _state.value.originalQueue.indexOfFirst { it.id == currentSong?.id }
+            val currentPos = exoPlayer.currentPosition
+
+            _state.value = _state.value.copy(
+                queue = _state.value.originalQueue,
+                isShuffleOn = false,
+                currentIndex = newIndex.coerceAtLeast(0)
+            )
+            exoPlayer.clearMediaItems()
+            _state.value.originalQueue.forEach { song ->
+                val streamUrl = urlBuilder.buildStreamUrl(song.id) ?: return@forEach
+                val mediaItem = MediaItem.Builder()
+                    .setMediaId(song.id)
+                    .setUri(streamUrl)
+                    .setMediaMetadata(
+                        androidx.media3.common.MediaMetadata.Builder()
+                            .setTitle(song.title)
+                            .setArtist(song.artistName)
+                            .setAlbumTitle(song.albumName)
+                            .setArtworkUri(
+                                song.coverArtId?.let {
+                                    urlBuilder.buildCoverArtUrl(it)?.let { url ->
+                                        android.net.Uri.parse(url)
+                                    }
+                                }
+                            )
+                            .build()
+                    )
+                    .build()
+                exoPlayer.addMediaItem(mediaItem)
+            }
+            exoPlayer.prepare()
+            exoPlayer.seekTo(newIndex.coerceAtLeast(0), currentPos)
+            exoPlayer.play()
+        }
     }
 
     fun toggleRepeat() {
